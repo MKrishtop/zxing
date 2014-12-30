@@ -14,11 +14,16 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  -->
-<resources>
-  <style name="CaptureTheme" parent="android:Theme.Holo">
-    <item name="android:windowFullscreen">true</item>
-    <item name="android:windowContentOverlay">@null</item>
-    <item name="android:windowActionBarOverlay">true</item>
-    <item name="android:windowActionModeOverlay">true</item>
+<resources xmlns:tools="http://schemas.android.com/tools">
+  <style name="CaptureTheme" parent="@style/Theme.AppCompat.Light.DarkActionBar">
+    <item name="windowActionBarOverlay">true</item>
+    <item name="windowActionModeOverlay">true</item>
+    <item name="colorPrimaryDark">#303F9F</item>
+    <item name="android:navigationBarColor" tools:ignore="NewApi">#303F9F</item>
+    <item name="actionBarStyle">@style/ReaderActionBar</item>
   </style>
+
+    <style name="ReaderActionBar" parent="@style/Widget.AppCompat.ActionBar">
+        <item name="background">@android:color/transparent</item>
+    </style>
 </resources>

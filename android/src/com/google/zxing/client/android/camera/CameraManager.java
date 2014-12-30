@@ -88,6 +88,7 @@ public final class CameraManager {
       }
       camera = theCamera;
     }
+    theCamera.setDisplayOrientation(90);
     theCamera.setPreviewDisplay(holder);
 
     if (!initialized) {
@@ -187,6 +188,20 @@ public final class CameraManager {
       }
     }
   }
+
+    public synchronized boolean isTorch() {
+        boolean result = false;
+        if (camera != null) {
+            if (autoFocusManager != null) {
+                autoFocusManager.stop();
+            }
+            result = configManager.getTorchState(camera);
+            if (autoFocusManager != null) {
+                autoFocusManager.start();
+            }
+        }
+        return result;
+    }
 
   /**
    * A single preview frame will be returned to the handler supplied. The data will arrive as byte[]
