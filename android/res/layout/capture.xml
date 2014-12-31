@@ -32,6 +32,6 @@
       android:layout_height="fill_parent"
       android:layout_margin="48dp"
       android:scaleType="centerInside"
-      android:src="@drawable/ic_aim"/>
+      android:src="@drawable/ic_aim_normal"/>
 
 </merge>

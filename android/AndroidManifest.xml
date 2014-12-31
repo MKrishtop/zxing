@@ -54,6 +54,14 @@
               android:stateNotNeeded="true"
               android:theme="@style/CaptureTheme"
               android:windowSoftInputMode="stateAlwaysHidden">
+
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW"/>
+            <category android:name="android.intent.category.DEFAULT"/>
+            <category android:name="android.intent.category.BROWSABLE"/>
+            <data android:scheme="localmart" />
+        </intent-filter>
+
     </activity>
     <activity android:name=".PreferencesActivity"
               android:label="@string/preferences_name"
