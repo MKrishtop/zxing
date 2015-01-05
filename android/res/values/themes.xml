@@ -19,11 +19,12 @@
     <item name="windowActionBarOverlay">true</item>
     <item name="windowActionModeOverlay">true</item>
     <item name="colorPrimaryDark">#303F9F</item>
-    <item name="android:navigationBarColor" tools:ignore="NewApi">#303F9F</item>
+    <item name="android:windowTranslucentNavigation" tools:ignore="NewApi">true</item>
+    <item name="android:windowTranslucentStatus" tools:ignore="NewApi">true</item>
     <item name="actionBarStyle">@style/ReaderActionBar</item>
   </style>
 
     <style name="ReaderActionBar" parent="@style/Widget.AppCompat.ActionBar">
-        <item name="background">@android:color/transparent</item>
+        <item name="background">@color/c_action_bar</item>
     </style>
 </resources>
