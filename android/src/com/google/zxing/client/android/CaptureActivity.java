@@ -105,7 +105,6 @@ public class CaptureActivity extends ActionBarActivity implements TextureView.Su
   private Result savedResultToShow;
   private ViewfinderView viewfinderView;
   private Result lastResult;
-  private boolean hasSurface;
   private boolean copyToClipboard;
   private IntentSource source;
   private String sourceUrl;
@@ -144,7 +143,8 @@ public class CaptureActivity extends ActionBarActivity implements TextureView.Su
     aimIv = (ImageView) findViewById(R.id.aim_iv);
     surfaceView = (TextureView) findViewById(R.id.preview_view);
 
-    hasSurface = false;
+    surfaceView.setSurfaceTextureListener(this);
+
     historyManager = new HistoryManager(this);
     historyManager.trimHistory();
     inactivityTimer = new InactivityTimer(this);
@@ -179,15 +179,6 @@ public class CaptureActivity extends ActionBarActivity implements TextureView.Su
 //    }
 
     resetStatusView();
-
-    if (hasSurface && surfaceView.getSurfaceTexture() != null) {
-      // The activity was paused but not stopped, so the surface still exists. Therefore
-      // surfaceCreated() won't be called, so init the camera here.
-      initCamera(surfaceView.getSurfaceTexture());
-    } else {
-      // Install the callback and wait for surfaceCreated() to init the camera.
-      surfaceView.setSurfaceTextureListener(this);
-    }
 
     beepManager.updatePrefs();
     ambientLightManager.start(cameraManager);
@@ -590,7 +581,7 @@ public class CaptureActivity extends ActionBarActivity implements TextureView.Su
     }
     try {
       cameraManager.openDriver(surfaceTexture);
-        surfaceView.setTransform(cameraManager.calcTextureMatrix(surfaceView.getMeasuredWidth(), surfaceView.getMeasuredHeight()));
+      surfaceView.setTransform(cameraManager.calcTextureMatrix(surfaceView.getMeasuredWidth(), surfaceView.getMeasuredHeight()));
       // Creating the handler starts the preview, which can also throw a RuntimeException.
       if (handler == null) {
         handler = new CaptureActivityHandler(this, DecodeFormatManager.QR_CODE_FORMATS, decodeHints, characterSet, cameraManager);
@@ -638,10 +629,7 @@ public class CaptureActivity extends ActionBarActivity implements TextureView.Su
         if (surface == null) {
             Log.e(TAG, "*** WARNING *** surfaceCreated() gave us a null surface!");
         }
-        if (!hasSurface) {
-            hasSurface = true;
-            initCamera(surface);
-        }
+        initCamera(surface);
     }
 
     @Override
