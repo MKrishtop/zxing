@@ -42,6 +42,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.SurfaceTexture;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -57,6 +58,7 @@ import android.view.MenuItem;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -80,7 +82,7 @@ import java.util.Map;
  * @author dswitkin@google.com (Daniel Switkin)
  * @author Sean Owen
  */
-public class CaptureActivity extends ActionBarActivity implements SurfaceHolder.Callback {
+public class CaptureActivity extends ActionBarActivity implements TextureView.SurfaceTextureListener {
 
   private static final String TAG = CaptureActivity.class.getSimpleName();
 
@@ -116,6 +118,7 @@ public class CaptureActivity extends ActionBarActivity implements SurfaceHolder.
   private AmbientLightManager ambientLightManager;
 
   protected ImageView aimIv;
+    TextureView surfaceView;
 
   ViewfinderView getViewfinderView() {
     return viewfinderView;
@@ -138,6 +141,7 @@ public class CaptureActivity extends ActionBarActivity implements SurfaceHolder.
     setContentView(R.layout.capture);
 
     aimIv = (ImageView) findViewById(R.id.aim_iv);
+    surfaceView = (TextureView) findViewById(R.id.preview_view);
 
     hasSurface = false;
     historyManager = new HistoryManager(this);
@@ -175,15 +179,13 @@ public class CaptureActivity extends ActionBarActivity implements SurfaceHolder.
 
     resetStatusView();
 
-    SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
-    SurfaceHolder surfaceHolder = surfaceView.getHolder();
     if (hasSurface) {
       // The activity was paused but not stopped, so the surface still exists. Therefore
       // surfaceCreated() won't be called, so init the camera here.
-      initCamera(surfaceHolder);
+      initCamera(surfaceView.getSurfaceTexture());
     } else {
       // Install the callback and wait for surfaceCreated() to init the camera.
-      surfaceHolder.addCallback(this);
+      surfaceView.setSurfaceTextureListener(this);
     }
 
     beepManager.updatePrefs();
@@ -265,7 +267,7 @@ public class CaptureActivity extends ActionBarActivity implements SurfaceHolder.
         return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
     }
   }
-  
+
   private static boolean isZXingURL(String dataString) {
     if (dataString == null) {
       return false;
@@ -280,23 +282,22 @@ public class CaptureActivity extends ActionBarActivity implements SurfaceHolder.
 
   @Override
   protected void onPause() {
-    if (handler != null) {
-      handler.quitSynchronously();
-      handler = null;
-    }
-    inactivityTimer.onPause();
-    ambientLightManager.stop();
-    beepManager.close();
-    cameraManager.closeDriver();
-    if (!hasSurface) {
-      SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
-      SurfaceHolder surfaceHolder = surfaceView.getHolder();
-      surfaceHolder.removeCallback(this);
-    }
+      onPauseActions();
     super.onPause();
   }
 
-  @Override
+    private void onPauseActions() {
+        if (handler != null) {
+          handler.quitSynchronously();
+          handler = null;
+        }
+        inactivityTimer.onPause();
+        ambientLightManager.stop();
+        beepManager.close();
+        cameraManager.closeDriver();
+    }
+
+    @Override
   protected void onDestroy() {
     inactivityTimer.shutdown();
     super.onDestroy();
@@ -387,27 +388,6 @@ public class CaptureActivity extends ActionBarActivity implements SurfaceHolder.
       }
       savedResultToShow = null;
     }
-  }
-
-  @Override
-  public void surfaceCreated(SurfaceHolder holder) {
-    if (holder == null) {
-      Log.e(TAG, "*** WARNING *** surfaceCreated() gave us a null surface!");
-    }
-    if (!hasSurface) {
-      hasSurface = true;
-      initCamera(holder);
-    }
-  }
-
-  @Override
-  public void surfaceDestroyed(SurfaceHolder holder) {
-    hasSurface = false;
-  }
-
-  @Override
-  public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
   }
 
   /**
@@ -599,7 +579,7 @@ public class CaptureActivity extends ActionBarActivity implements SurfaceHolder.
     }
   }
 
-  private void initCamera(SurfaceHolder surfaceHolder) {
+  private void initCamera(SurfaceTexture surfaceHolder) {
     if (surfaceHolder == null) {
       throw new IllegalStateException("No SurfaceHolder provided");
     }
@@ -650,4 +630,32 @@ public class CaptureActivity extends ActionBarActivity implements SurfaceHolder.
   public void drawViewfinder() {
     viewfinderView.drawViewfinder();
   }
+
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+        if (surface == null) {
+            Log.e(TAG, "*** WARNING *** surfaceCreated() gave us a null surface!");
+        }
+        if (!hasSurface) {
+            hasSurface = true;
+            initCamera(surface);
+        }
+    }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+    }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+        onPauseActions();
+        return false;
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+
+    }
+
 }
