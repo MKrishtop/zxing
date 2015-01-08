@@ -17,12 +17,14 @@
 package com.google.zxing.client.android.camera;
 
 import android.content.Context;
+import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.client.android.camera.open.OpenCameraInterface;
@@ -341,5 +343,28 @@ public final class CameraManager {
     return new PlanarYUVLuminanceSource(data, width, height, rect.left, rect.top,
                                         rect.width(), rect.height(), false);
   }
+
+    public Matrix calcTextureMatrix(int width, int height) {
+        int cameraWidth = configManager.getCameraResolution().x;
+        int cameraHeight = configManager.getCameraResolution().y;
+
+        float ratioSurface = width > height ? (float) width / height : (float) height / width;
+        float ratioPreview = (float) cameraWidth / cameraHeight;
+
+        float scaleX = 1f;
+        float scaleY = 1f;
+
+        if (ratioPreview > ratioSurface) {
+            int scaledHeight = (int) (((float) cameraWidth / cameraHeight) * width);
+            scaleY = (float) scaledHeight / height;
+        } else if (ratioPreview < ratioSurface) {
+            int scaledWidth = (int) (height / ((float) cameraWidth / cameraHeight));
+            scaleX = (float) scaledWidth / width;
+        }
+
+        Matrix matrix = new Matrix();
+        matrix.setScale(scaleX, scaleY);
+        return matrix;
+    }
 
 }

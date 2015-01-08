@@ -41,6 +41,7 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.SurfaceTexture;
 import android.net.Uri;
@@ -179,7 +180,7 @@ public class CaptureActivity extends ActionBarActivity implements TextureView.Su
 
     resetStatusView();
 
-    if (hasSurface) {
+    if (hasSurface && surfaceView.getSurfaceTexture() != null) {
       // The activity was paused but not stopped, so the surface still exists. Therefore
       // surfaceCreated() won't be called, so init the camera here.
       initCamera(surfaceView.getSurfaceTexture());
@@ -579,8 +580,8 @@ public class CaptureActivity extends ActionBarActivity implements TextureView.Su
     }
   }
 
-  private void initCamera(SurfaceTexture surfaceHolder) {
-    if (surfaceHolder == null) {
+  private void initCamera(SurfaceTexture surfaceTexture) {
+    if (surfaceTexture == null) {
       throw new IllegalStateException("No SurfaceHolder provided");
     }
     if (cameraManager.isOpen()) {
@@ -588,7 +589,8 @@ public class CaptureActivity extends ActionBarActivity implements TextureView.Su
       return;
     }
     try {
-      cameraManager.openDriver(surfaceHolder);
+      cameraManager.openDriver(surfaceTexture);
+        surfaceView.setTransform(cameraManager.calcTextureMatrix(surfaceView.getMeasuredWidth(), surfaceView.getMeasuredHeight()));
       // Creating the handler starts the preview, which can also throw a RuntimeException.
       if (handler == null) {
         handler = new CaptureActivityHandler(this, DecodeFormatManager.QR_CODE_FORMATS, decodeHints, characterSet, cameraManager);
@@ -605,7 +607,7 @@ public class CaptureActivity extends ActionBarActivity implements TextureView.Su
     }
   }
 
-  private void displayFrameworkBugMessageAndExit() {
+    private void displayFrameworkBugMessageAndExit() {
     AlertDialog.Builder builder = new AlertDialog.Builder(this);
     builder.setTitle(getString(R.string.app_name));
     builder.setMessage(getString(R.string.msg_camera_framework_bug));

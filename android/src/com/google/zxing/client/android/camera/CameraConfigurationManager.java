@@ -63,6 +63,7 @@ final class CameraConfigurationManager {
     Point theScreenResolution = new Point();
     display.getSize(theScreenResolution);
     theScreenResolution.y += Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT ? getNavigationBarHeight(context) : 0;
+    theScreenResolution.y -= Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ? getStatusBarHeight(context) : 0;
     screenResolution = theScreenResolution;
     Log.i(TAG, "Screen resolution: " + screenResolution);
     cameraResolution = CameraConfigurationUtils.findBestPreviewSizeValue(parameters, screenResolution);
@@ -72,6 +73,15 @@ final class CameraConfigurationManager {
     public static int getNavigationBarHeight(Context context) {
         Resources resources = context.getResources();
         int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            return resources.getDimensionPixelSize(resourceId);
+        }
+        return 0;
+    }
+
+    public static int getStatusBarHeight(Context context) {
+        Resources resources = context.getResources();
+        int resourceId = resources.getIdentifier("status_bar_height", "dimen", "android");
         if (resourceId > 0) {
             return resources.getDimensionPixelSize(resourceId);
         }
