@@ -503,38 +503,6 @@ public class CaptureActivity extends ActionBarActivity implements SurfaceHolder.
   // Put up our own UI for how to handle the decoded contents.
   protected void handleDecodeInternally(final Result rawResult, ResultHandler resultHandler, Bitmap barcode) {
       aimIv.setImageResource(R.drawable.ic_aim_active);
-      new Handler().postDelayed(new Runnable() {
-          @Override
-          public void run() {
-              AlertDialog dialog = new AlertDialog.Builder(CaptureActivity.this)
-                      .setTitle("Decoded text").setMessage(rawResult.getText())
-                      .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                          @Override
-                          public void onClick(DialogInterface dialog, int which) {
-                              dialog.dismiss();
-                              restartPreviewAfterDelay(0);
-                          }
-                      })
-                      .setPositiveButton("Open", new DialogInterface.OnClickListener() {
-                          @Override
-                          public void onClick(DialogInterface dialog, int which) {
-                              Intent intent = new Intent();
-                              intent.setData(Uri.parse(rawResult.getText()));
-                              intent.setAction(Intent.ACTION_VIEW);
-                              intent.addCategory(Intent.CATEGORY_DEFAULT);
-                              intent.addCategory(Intent.CATEGORY_BROWSABLE);
-                              CaptureActivity.this.startActivity(intent);
-                          }
-                      })
-                      .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                          @Override
-                          public void onCancel(DialogInterface dialog) {
-                              restartPreviewAfterDelay(0);
-                          }
-                      }).create();
-              dialog.show();
-          }
-      }, 500);
   }
 
   // Briefly show the contents of the barcode, then handle the result outside Barcode Scanner.

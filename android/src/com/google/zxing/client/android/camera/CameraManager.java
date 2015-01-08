@@ -237,26 +237,15 @@ public final class CameraManager {
         return null;
       }
 
-      int width = findDesiredDimensionInRange(screenResolution.x, MIN_FRAME_WIDTH, MAX_FRAME_WIDTH);
-      int height = findDesiredDimensionInRange(screenResolution.y, MIN_FRAME_HEIGHT, MAX_FRAME_HEIGHT);
+      int width = screenResolution.x - 2 * configManager.getViewfinderXOffset();
+      int height = width;
 
-      int leftOffset = (screenResolution.x - width) / 2;
+      int leftOffset = configManager.getViewfinderXOffset();
       int topOffset = (screenResolution.y - height) / 2;
       framingRect = new Rect(leftOffset, topOffset, leftOffset + width, topOffset + height);
       Log.d(TAG, "Calculated framing rect: " + framingRect);
     }
     return framingRect;
-  }
-  
-  private static int findDesiredDimensionInRange(int resolution, int hardMin, int hardMax) {
-    int dim = 5 * resolution / 8; // Target 5/8 of each dimension
-    if (dim < hardMin) {
-      return hardMin;
-    }
-    if (dim > hardMax) {
-      return hardMax;
-    }
-    return dim;
   }
 
   /**
@@ -271,13 +260,16 @@ public final class CameraManager {
       if (framingRect == null) {
         return null;
       }
-      Rect rect = new Rect(framingRect);
+      Rect rect = new Rect(framingRect.top, framingRect.left, framingRect.bottom, framingRect.right); //rotate to match camera orientation
+
       Point cameraResolution = configManager.getCameraResolution();
       Point screenResolution = configManager.getScreenResolution();
       if (cameraResolution == null || screenResolution == null) {
         // Called early, before init even finished
         return null;
       }
+
+      screenResolution = new Point(screenResolution.y, screenResolution.x); //rotate to match camera orientation
       rect.left = rect.left * cameraResolution.x / screenResolution.x;
       rect.right = rect.right * cameraResolution.x / screenResolution.x;
       rect.top = rect.top * cameraResolution.y / screenResolution.y;

@@ -18,10 +18,13 @@ package com.google.zxing.client.android.camera;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Point;
 import android.hardware.Camera;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -38,10 +41,17 @@ final class CameraConfigurationManager {
   private final Context context;
   private Point screenResolution;
   private Point cameraResolution;
+    private int viewfinderXOffset;
 
   CameraConfigurationManager(Context context) {
     this.context = context;
+      this.viewfinderXOffset = ((int) dpToPx(48f, context));
   }
+
+    public static float dpToPx(float dp, Context context) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
+                context.getResources().getDisplayMetrics());
+    }
 
   /**
    * Reads, one time, values from the camera that are needed by the app.
@@ -52,11 +62,21 @@ final class CameraConfigurationManager {
     Display display = manager.getDefaultDisplay();
     Point theScreenResolution = new Point();
     display.getSize(theScreenResolution);
+    theScreenResolution.y += Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT ? getNavigationBarHeight(context) : 0;
     screenResolution = theScreenResolution;
     Log.i(TAG, "Screen resolution: " + screenResolution);
     cameraResolution = CameraConfigurationUtils.findBestPreviewSizeValue(parameters, screenResolution);
     Log.i(TAG, "Camera resolution: " + cameraResolution);
   }
+
+    public static int getNavigationBarHeight(Context context) {
+        Resources resources = context.getResources();
+        int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            return resources.getDimensionPixelSize(resourceId);
+        }
+        return 0;
+    }
 
   void setDesiredCameraParameters(Camera camera, boolean safeMode) {
     Camera.Parameters parameters = camera.getParameters();
@@ -119,6 +139,10 @@ final class CameraConfigurationManager {
   Point getScreenResolution() {
     return screenResolution;
   }
+
+    public int getViewfinderXOffset() {
+        return viewfinderXOffset;
+    }
 
   boolean getTorchState(Camera camera) {
     if (camera != null) {
